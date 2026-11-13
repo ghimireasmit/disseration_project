@@ -4,307 +4,670 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102a43">
-  <title>PROJ519 analysis runner</title>
+  <meta name="description" content="Results dashboard for a dissertation analysis of explainability and fairness in machine-learning fraud detection.">
+  <title>Fraud Detection Analysis | PROJ519</title>
   <style>
     :root {
       color-scheme: light;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: #172b4d;
-      background: #f3f6fa;
+      background: #f5f7fa;
       font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --navy: #102a43;
+      --teal: #087e78;
+      --muted: #52667a;
+      --line: #d9e2ec;
+      --card: #fff;
     }
 
     * { box-sizing: border-box; }
 
+    html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
-      min-height: 100vh;
-      padding: 48px 20px;
+      min-width: 320px;
+      background: #f5f7fa;
     }
 
-    main {
-      width: min(100%, 720px);
-      margin: 0 auto;
+    a { color: var(--teal); }
+
+    a:focus-visible {
+      outline: 3px solid #f0b429;
+      outline-offset: 3px;
+      border-radius: 3px;
     }
+
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin-inline: auto;
+    }
+
+    .topbar {
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid rgb(255 255 255 / 16%);
+    }
+
+    .brand {
+      color: #fff;
+      font-size: .92rem;
+      font-weight: 750;
+      letter-spacing: .04em;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: flex-end;
+    }
+
+    .nav a {
+      color: #d9e2ec;
+      font-size: .9rem;
+      text-decoration: none;
+    }
+
+    .nav a:hover { color: #fff; }
+
+    .hero {
+      color: #fff;
+      background:
+        radial-gradient(ellipse at 86% 20%, rgb(22 138 131 / 34%), transparent 34%),
+        linear-gradient(135deg, #102a43, #173f55);
+      padding-bottom: 54px;
+    }
+
+    .hero-content { padding: 66px 0 10px; }
 
     .eyebrow {
-      color: #52667a;
-      font-size: .82rem;
-      font-weight: 700;
-      letter-spacing: .08em;
+      margin: 0 0 16px;
+      color: #8fe3d3;
+      font-size: .78rem;
+      font-weight: 750;
+      letter-spacing: .14em;
       text-transform: uppercase;
     }
 
     h1 {
-      margin: 10px 0;
-      color: #102a43;
-      font-size: clamp(2rem, 6vw, 3.2rem);
-      letter-spacing: -.04em;
-      line-height: 1.08;
+      max-width: 790px;
+      margin: 0;
+      font-size: clamp(2.4rem, 6vw, 4.7rem);
+      letter-spacing: -.055em;
+      line-height: 1.02;
     }
 
-    .intro {
-      margin: 0 0 28px;
-      color: #52667a;
-      font-size: 1.08rem;
-      line-height: 1.6;
+    .hero p:not(.eyebrow) {
+      max-width: 690px;
+      margin: 22px 0 28px;
+      color: #d9e2ec;
+      font-size: clamp(1.05rem, 2vw, 1.22rem);
+      line-height: 1.65;
     }
 
-    .notice, .runner {
-      border: 1px solid #d9e2ec;
-      border-radius: 16px;
-      background: #fff;
-      box-shadow: 0 12px 30px rgb(16 42 67 / 7%);
-    }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-    .notice {
-      margin-bottom: 20px;
-      padding: 18px 20px;
-      border-left: 5px solid #d9822b;
-      line-height: 1.55;
-    }
-
-    .notice strong { color: #102a43; }
-
-    .runner { padding: clamp(22px, 5vw, 36px); }
-
-    .progress-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      color: #52667a;
-      font-size: .92rem;
-      font-weight: 650;
-    }
-
-    .progress-track {
-      height: 8px;
-      margin: 12px 0 28px;
-      overflow: hidden;
-      border-radius: 99px;
-      background: #e6edf4;
-    }
-
-    .progress-fill {
-      width: 0;
-      height: 100%;
-      border-radius: inherit;
-      background: #168a83;
-      transition: width 180ms ease;
-    }
-
-    .step-label {
-      margin: 0 0 8px;
-      color: #168a83;
-      font-size: .85rem;
-      font-weight: 750;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    h2 {
-      margin: 0 0 12px;
-      color: #102a43;
-      font-size: clamp(1.45rem, 4vw, 2rem);
-    }
-
-    .description {
-      margin: 0 0 24px;
-      color: #52667a;
-      line-height: 1.6;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-    }
-
-    button, .button {
+    .button {
       display: inline-flex;
       min-height: 46px;
       align-items: center;
       justify-content: center;
-      border: 0;
+      border: 1px solid transparent;
       border-radius: 9px;
       padding: 11px 17px;
-      font: inherit;
-      font-weight: 700;
+      font-size: .94rem;
+      font-weight: 750;
       text-decoration: none;
-      cursor: pointer;
     }
 
-    .primary {
-      color: #fff;
-      background: #087e78;
+    .button-light { color: var(--navy); background: #fff; }
+    .button-light:hover { background: #edf2f7; }
+    .button-outline { color: #fff; border-color: #9fb3c8; }
+    .button-outline:hover { background: rgb(255 255 255 / 10%); }
+
+    .metrics {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: -1px;
+      transform: translateY(28px);
     }
 
-    .primary:hover { background: #06645f; }
-
-    .secondary {
-      color: #243b53;
-      background: #eaf0f6;
+    .metric {
+      min-height: 132px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 20px;
+      background: var(--card);
+      box-shadow: 0 12px 30px rgb(16 42 67 / 6%);
     }
 
-    .secondary:hover { background: #d9e2ec; }
-
-    button:focus-visible, a:focus-visible {
-      outline: 3px solid #f0b429;
-      outline-offset: 3px;
+    .metric-label {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
     }
 
-    .status {
-      min-height: 48px;
-      margin: 18px 0 0;
+    .metric-value {
+      display: block;
+      color: var(--navy);
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+
+    .metric-note {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .8rem;
+      line-height: 1.45;
+    }
+
+    main { padding: 70px 0 60px; }
+
+    section { scroll-margin-top: 24px; }
+
+    .section { margin-top: 66px; }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .section-heading p {
+      max-width: 650px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .kicker {
+      margin: 0 0 9px;
+      color: var(--teal);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--navy);
+      font-size: clamp(1.7rem, 4vw, 2.45rem);
+      letter-spacing: -.045em;
+    }
+
+    h3 {
+      margin: 0 0 9px;
+      color: var(--navy);
+      font-size: 1.12rem;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--card);
+      box-shadow: 0 8px 24px rgb(16 42 67 / 4%);
+    }
+
+    .context {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 18px;
+    }
+
+    .context article { padding: 24px; }
+
+    .context p, .context li {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .context p { margin: 0; }
+    .context ul { margin: 10px 0 0; padding-left: 20px; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    caption {
+      padding: 18px 20px 10px;
+      color: var(--navy);
+      font-weight: 750;
+      text-align: left;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e6edf4;
+      padding: 14px 18px;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 750;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    td { color: #334e68; font-size: .92rem; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #f8fafc; }
+    .model-name { color: var(--navy); font-weight: 750; }
+
+    .callout {
+      margin-top: 16px;
+      border-left: 4px solid #d9822b;
+      border-radius: 0 10px 10px 0;
+      padding: 16px 18px;
       color: #334e68;
-      line-height: 1.55;
+      background: #fff8e6;
+      line-height: 1.6;
     }
 
-    .footer {
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    figure {
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #fff;
+    }
+
+    figcaption {
+      padding: 15px 18px 17px;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+
+    figcaption strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--navy);
+    }
+
+    .chart-wide { grid-column: 1 / -1; }
+
+    .fairness-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 21px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--navy);
+      font-size: 1.7rem;
+      letter-spacing: -.035em;
+    }
+
+    .stat span { color: var(--muted); line-height: 1.5; }
+
+    .takeaways {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .takeaway { padding: 21px; }
+    .takeaway p { margin: 0; color: var(--muted); line-height: 1.6; }
+
+    .disclaimer {
+      margin-top: 26px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 17px 19px;
+      color: var(--muted);
+      background: #edf2f7;
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 24px 0 36px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    footer .wrap {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
-      margin-top: 20px;
-      color: #52667a;
-      font-size: .92rem;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    .footer a { color: #087e78; }
+    @media (max-width: 800px) {
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .takeaways { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .wrap { width: min(100% - 28px, 1120px); }
+      .topbar { align-items: flex-start; flex-direction: column; padding: 18px 0; }
+      .nav { justify-content: flex-start; gap: 10px 16px; }
+      .hero-content { padding-top: 46px; }
+      .metrics, .context, .chart-grid, .fairness-stats { grid-template-columns: 1fr; }
+      .chart-wide { grid-column: auto; }
+      .section-heading { align-items: flex-start; flex-direction: column; }
+      main { padding-top: 58px; }
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-      }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <p class="eyebrow">MSc Data Science and Business Analytics · PROJ519</p>
-    <h1>Run the analysis, one notebook at a time</h1>
-    <p class="intro">Follow the four notebooks in order. This page will ask before opening each one.</p>
-
-    <aside class="notice">
-      <strong>Before starting:</strong> GitHub Pages hosts this guide but cannot run Python.
-      Each notebook opens in Google Colab. Save a copy to your Google Drive, and put
-      <code>Base.csv</code> in <code>MyDrive/Dissertation/data/</code> so the notebook can find it.
-      The first notebook can create the faster <code>Base.parquet</code> copy.
-    </aside>
-
-    <section class="runner" aria-labelledby="notebook-title">
-      <div class="progress-row">
-        <span id="progress-label">Notebook 1 of 4</span>
-        <span id="progress-percent">0% complete</span>
+  <header class="hero">
+    <div class="wrap">
+      <nav class="topbar" aria-label="Main navigation">
+        <a class="brand" href="#overview">PROJ519 · RESEARCH DASHBOARD</a>
+        <div class="nav">
+          <a href="#models">Models</a>
+          <a href="#explainability">Explainability</a>
+          <a href="#fairness">Fairness</a>
+          <a href="run.html">Run notebooks</a>
+        </div>
+      </nav>
+      <div class="hero-content" id="overview">
+        <p class="eyebrow">MSc Data Science and Business Analytics</p>
+        <h1>Can fraud models be accurate, explainable, and fair?</h1>
+        <p>A research dashboard comparing logistic regression and LightGBM on the Bank Account Fraud dataset, with SHAP explanations and a fairness audit across customer groups.</p>
+        <div class="actions">
+          <a class="button button-light" href="#models">Explore findings</a>
+          <a class="button button-outline" href="https://github.com/ghimireasmit/disseration_project">View source on GitHub</a>
+        </div>
       </div>
-      <div class="progress-track" role="progressbar" aria-label="Notebook progress" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-      <p class="step-label" id="step-label">Step 1</p>
-      <h2 id="notebook-title">Ready?</h2>
-      <p class="description" id="description"></p>
-      <div class="actions" id="actions"></div>
-      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="metrics" aria-label="Study overview">
+      <article class="metric">
+        <span class="metric-label">BAF dataset</span>
+        <span class="metric-value">1 million</span>
+        <span class="metric-note">Synthetic bank-account applications across 8 months</span>
+      </article>
+      <article class="metric">
+        <span class="metric-label">Held-out test set</span>
+        <span class="metric-value">205,011</span>
+        <span class="metric-note">Months 6–7; 2,878 fraud cases</span>
+      </article>
+      <article class="metric">
+        <span class="metric-label">Best AUC-PR</span>
+        <span class="metric-value">0.200</span>
+        <span class="metric-note">LightGBM, compared with 0.157 for logistic regression</span>
+      </article>
+      <article class="metric">
+        <span class="metric-label">Age-group FPR ratio</span>
+        <span class="metric-value">0.28–0.31</span>
+        <span class="metric-note">Under-50 FPR divided by 50+ FPR; below 1 indicates a disparity</span>
+      </article>
     </section>
 
-    <nav class="footer" aria-label="Project links">
-      <a href="https://github.com/ghimireasmit/disseration_project">Project repository</a>
-      <a href="https://github.com/ghimireasmit/disseration_project/tree/main/data">Dataset folder</a>
-      <a href="https://github.com/ghimireasmit/disseration_project/blob/main/README.md">Setup instructions</a>
-    </nav>
-  </main>
+    <main>
+      <section class="section" aria-labelledby="study-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Study design</p>
+            <h2 id="study-title">What was evaluated</h2>
+          </div>
+        </div>
+        <div class="context">
+          <article class="card">
+            <h3>Research focus</h3>
+            <p>The project studies a combined explainability and fairness audit for machine-learning fraud detection, considered in the context of the UK FCA Consumer Duty. It compares a logistic-regression baseline with a LightGBM model and examines outcomes across age, income, and employment groups.</p>
+          </article>
+          <article class="card">
+            <h3>Evaluation approach</h3>
+            <ul>
+              <li>Temporal evaluation: train on earlier months and test on months 6–7.</li>
+              <li>Imbalanced-class metrics include AUC-PR and recall at a 5% false-positive-rate target.</li>
+              <li>SHAP analyses explain global patterns and individual predictions.</li>
+              <li>Fairness metrics compare error rates across customer groups.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
 
-  <script>
-    const notebooks = [
-      {
-        file: "1_EDA.ipynb",
-        title: "Exploratory data analysis",
-        description: "Inspect and prepare the BAF data, create the train/test sets, and run the logistic regression baseline."
-      },
-      {
-        file: "2_Modelling.ipynb",
-        title: "Model comparison",
-        description: "Tune and compare logistic regression with LightGBM. This notebook uses the files produced by notebook 1."
-      },
-      {
-        file: "3_SHAP.ipynb",
-        title: "Explainability with SHAP",
-        description: "Explore global and individual model explanations. This notebook uses the trained models from notebook 2."
-      },
-      {
-        file: "4_Fairness.ipynb",
-        title: "Fairness audit",
-        description: "Review group-level outcomes and fairness analyses using the predictions and models from earlier notebooks."
-      }
-    ];
+      <section class="section" id="models" aria-labelledby="models-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">01 · Performance</p>
+            <h2 id="models-title">Model comparison</h2>
+          </div>
+          <p>Test-set results on months 6–7. Recall@5%FPR is measured from the validation operating point; the observed test FPR can differ.</p>
+        </div>
+        <div class="card table-wrap">
+          <table>
+            <caption>Held-out test performance</caption>
+            <thead>
+              <tr>
+                <th scope="col">Model</th>
+                <th scope="col">AUC-PR</th>
+                <th scope="col">Recall @ 5% FPR</th>
+                <th scope="col">Test FPR</th>
+                <th scope="col">Precision</th>
+                <th scope="col">F1</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="model-name">Logistic regression</td>
+                <td>0.157</td>
+                <td>0.496</td>
+                <td>4.97%</td>
+                <td>0.124</td>
+                <td>0.199</td>
+              </tr>
+              <tr>
+                <td class="model-name">LightGBM</td>
+                <td>0.200</td>
+                <td>0.548</td>
+                <td>6.03%</td>
+                <td>0.121</td>
+                <td>0.201</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">LightGBM has stronger AUC-PR and recall in this test, while its observed false-positive rate is higher than the 5% validation target. This illustrates why performance and customer impact need to be considered together.</div>
+        <div class="chart-grid" style="margin-top: 18px">
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/pr_roc_curves.png" alt="Precision-recall and ROC curves comparing logistic regression and LightGBM">
+            <figcaption><strong>Precision–recall and ROC curves</strong>Curves compare ranking performance for the two models.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/lightgbm_gain_importance.png" alt="LightGBM feature importance by gain">
+            <figcaption><strong>LightGBM feature importance</strong>Gain-based importance summarizes features used by the fitted tree model.</figcaption>
+          </figure>
+        </div>
+      </section>
 
-    const progressKey = "proj519-notebook-runner-step";
-    let step = Number.parseInt(localStorage.getItem(progressKey) || "0", 10);
-    if (!Number.isInteger(step) || step < 0 || step > notebooks.length) step = 0;
-    let opened = false;
+      <section class="section" id="explainability" aria-labelledby="explainability-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">02 · Interpretability</p>
+            <h2 id="explainability-title">What drives model scores?</h2>
+          </div>
+          <p>SHAP values provide a view of feature contributions. They explain model behavior; they do not establish that a prediction is correct or causally justified.</p>
+        </div>
+        <div class="chart-grid">
+          <figure class="card chart-wide">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_global_importance.png" alt="Global SHAP feature importance for fraud predictions">
+            <figcaption><strong>Global SHAP importance</strong>Overall contribution of features to the LightGBM predictions.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_beeswarm.png" alt="SHAP beeswarm plot showing feature impact across test applications">
+            <figcaption><strong>Distribution of feature effects</strong>Each point represents a test-set application and its feature contribution.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_lr_vs_lgbm.png" alt="Comparison of SHAP feature importance between logistic regression and LightGBM">
+            <figcaption><strong>Model explanation comparison</strong>Compare which features contribute most across both model types.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_dependence.png" alt="SHAP dependence plots for selected features">
+            <figcaption><strong>Feature dependence</strong>How selected feature values relate to their contributions to model scores.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_categorical_effects.png" alt="SHAP effects across categorical feature values">
+            <figcaption><strong>Categorical effects</strong>Contribution patterns across categories in selected features.</figcaption>
+          </figure>
+        </div>
+        <details class="card" style="margin-top: 18px; padding: 18px 20px">
+          <summary style="color: var(--navy); cursor: pointer; font-weight: 750">View individual SHAP explanations</summary>
+          <div class="chart-grid" style="margin-top: 18px">
+            <figure class="card">
+              <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_waterfall_true_positive.png" alt="Waterfall SHAP explanation for a correctly flagged fraud case">
+              <figcaption><strong>True positive</strong>One fraud case correctly flagged by the model.</figcaption>
+            </figure>
+            <figure class="card">
+              <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_waterfall_false_positive.png" alt="Waterfall SHAP explanation for a genuine application incorrectly flagged">
+              <figcaption><strong>False positive</strong>One genuine application incorrectly flagged by the model.</figcaption>
+            </figure>
+            <figure class="card">
+              <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/shap_waterfall_false_negative.png" alt="Waterfall SHAP explanation for a fraud case missed by the model">
+              <figcaption><strong>False negative</strong>One fraud case missed by the model.</figcaption>
+            </figure>
+          </div>
+        </details>
+      </section>
 
-    const $ = (id) => document.getElementById(id);
-    const progressBar = document.querySelector('[role="progressbar"]');
+      <section class="section" id="fairness" aria-labelledby="fairness-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">03 · Group outcomes</p>
+            <h2 id="fairness-title">Fairness audit</h2>
+          </div>
+          <p>False-positive rates measure how often genuine applicants are flagged. The age ratio below is under-50 FPR divided by 50+ FPR; a smaller value indicates a larger disparity against older applicants.</p>
+        </div>
+        <div class="fairness-stats">
+          <article class="stat card">
+            <strong>0.28</strong>
+            <span>Logistic regression age FPR ratio (under 50 ÷ 50+)</span>
+          </article>
+          <article class="stat card">
+            <strong>0.31</strong>
+            <span>LightGBM age FPR ratio (under 50 ÷ 50+)</span>
+          </article>
+        </div>
+        <div class="chart-grid">
+          <figure class="card chart-wide">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/fairness_error_rates_by_group.png" alt="False-positive rates and other error metrics by customer group">
+            <figcaption><strong>Error rates by customer group</strong>Group-level rates and confidence intervals from the fairness audit.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/fairness_threshold_sweep.png" alt="Fairness disparities across classification thresholds">
+            <figcaption><strong>Threshold sensitivity</strong>How group disparities vary as the operating threshold changes.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/fairness_drift_by_month.png" alt="Fairness and error rates over test months">
+            <figcaption><strong>Changes over time</strong>Group error rates across the two held-out test months.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/fairness_with_vs_without_protected.png" alt="Comparison of fairness and model performance with and without protected attributes">
+            <figcaption><strong>Removing protected attributes</strong>Comparison of group disparities and performance before and after retraining without protected features.</figcaption>
+          </figure>
+          <figure class="card">
+            <img src="https://raw.githubusercontent.com/ghimireasmit/disseration_project/main/outputs/figures/fairness_age_gap_decomposition.png" alt="SHAP decomposition of the age-related score gap">
+            <figcaption><strong>Age-gap decomposition</strong>Feature contributions to the age-related score gap.</figcaption>
+          </figure>
+        </div>
+      </section>
 
-    function render() {
-      const complete = step === notebooks.length;
-      const notebook = notebooks[step];
-      const percent = Math.round((step / notebooks.length) * 100);
+      <section class="section" aria-labelledby="takeaways-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Interpretation</p>
+            <h2 id="takeaways-title">Key takeaways</h2>
+          </div>
+        </div>
+        <div class="takeaways">
+          <article class="takeaway card">
+            <h3>Performance is a trade-off</h3>
+            <p>LightGBM improves AUC-PR and recall in this evaluation, but its test false-positive rate is above the validation target.</p>
+          </article>
+          <article class="takeaway card">
+            <h3>Explanations are not fairness guarantees</h3>
+            <p>SHAP helps describe model contributions, but a transparent explanation alone does not prevent unequal error rates.</p>
+          </article>
+          <article class="takeaway card">
+            <h3>Removing features is not a complete fix</h3>
+            <p>Disparities remain after excluding protected attributes, consistent with other features retaining group-related information.</p>
+          </article>
+        </div>
+        <p class="disclaimer"><strong>Scope:</strong> This dashboard presents precomputed research results from the notebooks; it does not run Python or make decisions about real applicants. Findings depend on the dataset, split, metrics, and thresholds used. They should not be interpreted as legal or regulatory advice.</p>
+      </section>
 
-      $("progress-label").textContent = complete ? "All notebooks complete" : `Notebook ${step + 1} of ${notebooks.length}`;
-      $("progress-percent").textContent = `${percent}% complete`;
-      $("progress-fill").style.width = `${percent}%`;
-      progressBar.setAttribute("aria-valuenow", String(step));
+      <section class="section" aria-labelledby="sources-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Reproducibility</p>
+            <h2 id="sources-title">Explore the project</h2>
+          </div>
+        </div>
+        <div class="context">
+          <article class="card">
+            <h3>Run the analysis</h3>
+            <p>Open the notebooks in order in Google Colab, or create a GitHub Codespace to run them in an interactive environment.</p>
+            <p style="margin-top: 14px"><a href="run.html">Open the notebook guide</a></p>
+          </article>
+          <article class="card">
+            <h3>Source files and results</h3>
+            <ul>
+              <li><a href="https://github.com/ghimireasmit/disseration_project">Repository and notebooks</a></li>
+              <li><a href="https://github.com/ghimireasmit/disseration_project/tree/main/outputs/results">Result tables (CSV)</a></li>
+              <li><a href="https://github.com/ghimireasmit/disseration_project/tree/main/outputs/figures">Figures (PNG)</a></li>
+              <li><a href="https://github.com/ghimireasmit/disseration_project/blob/main/README.md">Setup and environment</a></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
 
-      if (complete) {
-        $("step-label").textContent = "Finished";
-        $("notebook-title").textContent = "You’ve reached the end";
-        $("description").textContent = "All four notebooks have been marked complete in this browser.";
-        $("actions").innerHTML = '<button class="secondary" id="reset">Start again</button>';
-        $("status").textContent = "";
-        $("reset").addEventListener("click", () => {
-          step = 0;
-          opened = false;
-          localStorage.setItem(progressKey, "0");
-          render();
-        });
-        return;
-      }
-
-      $("step-label").textContent = `Step ${step + 1}`;
-      $("notebook-title").textContent = notebook.title;
-      $("description").textContent = notebook.description;
-      $("status").textContent = opened
-        ? "The notebook opened in a new tab. Run it in Colab, then return here when you’re ready to continue."
-        : `Would you like to open ${notebook.file} in Google Colab now?`;
-
-      if (opened) {
-        $("actions").innerHTML = '<button class="primary" id="continue">I’m finished — continue</button><button class="secondary" id="stay">Not yet</button>';
-        $("continue").addEventListener("click", () => {
-          step += 1;
-          opened = false;
-          localStorage.setItem(progressKey, String(step));
-          render();
-        });
-        $("stay").addEventListener("click", () => {
-          $("status").textContent = "No problem. Your place is saved; continue when you’re ready.";
-        });
-      } else {
-        const colabUrl = `https://colab.research.google.com/github/ghimireasmit/disseration_project/blob/main/${notebook.file}`;
-        $("actions").innerHTML = '<button class="primary" id="open">Yes, open in Colab</button><button class="secondary" id="later">Not now</button>';
-        $("open").addEventListener("click", () => {
-          window.open(colabUrl, "_blank", "noopener,noreferrer");
-          opened = true;
-          render();
-        });
-        $("later").addEventListener("click", () => {
-          $("status").textContent = "No problem. You can open this notebook whenever you’re ready.";
-        });
-      }
-    }
-
-    render();
-  </script>
+  <footer>
+    <div class="wrap">
+      <span>PROJ519 · MSc Dissertation and Research Skills</span>
+      <span>Results are precomputed from the published analysis notebooks.</span>
+    </div>
+  </footer>
 </body>
 </html>
